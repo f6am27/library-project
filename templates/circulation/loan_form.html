@@ -1,0 +1,61 @@
+{% extends "base/base.html" %}
+{% block title %}استعارة جديدة — مكتبة دمشقية{% endblock %}
+{% block page_title %}استعارة جديدة{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="bi bi-arrow-left-right"></i>
+      <span>تسجيل استعارة جديدة</span>
+    </div>
+    <div style="padding:1.5rem">
+      <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert-custom alert-error" style="margin-bottom:1rem">
+          <i class="bi bi-x-circle"></i>
+          {{ form.non_field_errors|join:", " }}
+        </div>
+        {% endif %}
+
+        <div style="display:flex; flex-direction:column; gap:1.1rem">
+          {% for field in form %}
+          <div>
+            <label class="form-label">
+              {{ field.label }}
+              {% if field.field.required %}<span style="color:var(--danger)">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+            <div style="font-size:.75rem; color:var(--text-muted); margin-top:.25rem">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+            <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">
+              <i class="bi bi-exclamation-circle"></i> {{ field.errors|join:", " }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- معلومة -->
+        <div style="background:rgba(45,107,107,.06); border:1px solid rgba(45,107,107,.15); border-radius:10px; padding:.9rem; margin-top:1.2rem; font-size:.82rem; color:var(--text-muted)">
+          <i class="bi bi-info-circle" style="color:var(--teal)"></i>
+          موعد الإرجاع الافتراضي هو 14 يوماً من تاريخ اليوم. يمكن تعديله حسب الحاجة.
+        </div>
+
+        <div style="display:flex; gap:.8rem; margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--border)">
+          <button type="submit" class="btn-gold">
+            <i class="bi bi-check-lg"></i> تسجيل الاستعارة
+          </button>
+          <a href="{% url 'loan_list' %}" class="btn-outline-custom">
+            <i class="bi bi-x"></i> إلغاء
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

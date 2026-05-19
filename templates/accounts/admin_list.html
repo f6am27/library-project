@@ -1,0 +1,82 @@
+{% extends "base/base.html" %}
+{% block title %}الإداريون — مكتبة دمشقية{% endblock %}
+{% block page_title %}إدارة الإداريين{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">الإداريون</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ admins.count }} إداري</p>
+  </div>
+  <a href="{% url 'admin_create' %}" class="btn-primary-custom">
+    <i class="bi bi-person-plus"></i> إضافة إداري
+  </a>
+</div>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem">
+  {% for admin in admins %}
+  <div class="card" style="padding:1.4rem">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem">
+      <div style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700; flex-shrink:0;
+        {% if admin.role == 'super_admin' %}background:rgba(201,168,76,.15); color:var(--gold)
+        {% else %}background:rgba(45,107,107,.12); color:var(--teal){% endif %}">
+        {{ admin.user.username|first|upper }}
+      </div>
+      <div>
+        <div style="font-weight:600; font-size:.95rem">
+          {{ admin.user.get_full_name|default:admin.user.username }}
+        </div>
+        <div style="font-size:.78rem; margin-top:.2rem">
+          <span style="padding:.2rem .6rem; border-radius:20px; font-weight:500;
+            {% if admin.role == 'super_admin' %}background:rgba(201,168,76,.15); color:var(--gold)
+            {% else %}background:rgba(45,107,107,.1); color:var(--teal){% endif %}">
+            {{ admin.get_role_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border); padding-top:.9rem; display:flex; flex-direction:column; gap:.4rem">
+      {% if admin.user.email %}
+      <div style="font-size:.8rem; color:var(--text-muted); display:flex; align-items:center; gap:.4rem">
+        <i class="bi bi-envelope"></i> {{ admin.user.email }}
+      </div>
+      {% endif %}
+      {% if admin.user.phone %}
+      <div style="font-size:.8rem; color:var(--text-muted); display:flex; align-items:center; gap:.4rem">
+        <i class="bi bi-phone"></i> {{ admin.user.phone }}
+      </div>
+      {% endif %}
+      <div style="font-size:.78rem; color:var(--text-muted); display:flex; align-items:center; gap:.4rem">
+        <i class="bi bi-calendar"></i> انضم {{ admin.user.created_at|date:"Y-m-d" }}
+      </div>
+    </div>
+
+    {% if admin.role != 'super_admin' %}
+    <div style="margin-top:1rem; padding-top:.9rem; border-top:1px solid var(--border)">
+      <form method="post" action="{% url 'admin_delete' admin.pk %}"
+            onsubmit="return confirm('هل تريد حذف هذا الإداري نهائياً؟')">
+        {% csrf_token %}
+        <button type="submit" class="btn-outline-custom"
+                style="width:100%; justify-content:center; border-color:rgba(192,57,43,.3); color:var(--danger); font-size:.83rem">
+          <i class="bi bi-trash"></i> حذف الإداري
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div style="margin-top:1rem; padding-top:.9rem; border-top:1px solid var(--border)">
+      <div style="text-align:center; font-size:.78rem; color:var(--text-muted)">
+        <i class="bi bi-shield-check" style="color:var(--gold)"></i>
+        مدير عام — لا يمكن حذفه
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1; text-align:center; padding:4rem; color:var(--text-muted)">
+    <i class="bi bi-people" style="font-size:3rem; display:block; margin-bottom:.8rem; opacity:.3"></i>
+    لا يوجد إداريون
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

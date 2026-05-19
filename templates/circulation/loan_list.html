@@ -1,0 +1,117 @@
+{% extends "base/base.html" %}
+{% block title %}الاستعارات — مكتبة دمشقية{% endblock %}
+{% block page_title %}إدارة الاستعارات{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">الاستعارات</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ loans.count }} سجل استعارة</p>
+  </div>
+  <a href="{% url 'loan_create' %}" class="btn-gold">
+    <i class="bi bi-plus-circle"></i> استعارة جديدة
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:1.2rem">
+  <div style="padding:1rem 1.2rem">
+    <form method="get" style="display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end">
+      <div class="search-wrap" style="flex:1; min-width:200px">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="بحث بالاسم أو عنوان الكتاب..."/>
+      </div>
+      <div style="min-width:150px">
+        <select name="status" class="form-select" onchange="this.form.submit()">
+          <option value="">كل الحالات</option>
+          <option value="active"   {% if status == 'active' %}selected{% endif %}>نشطة</option>
+          <option value="overdue"  {% if status == 'overdue' %}selected{% endif %}>متأخرة</option>
+          <option value="returned" {% if status == 'returned' %}selected{% endif %}>مرجعة</option>
+          <option value="lost"     {% if status == 'lost' %}selected{% endif %}>مفقودة</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-primary-custom"><i class="bi bi-search"></i> بحث</button>
+      {% if query or status %}
+      <a href="{% url 'loan_list' %}" class="btn-outline-custom"><i class="bi bi-x"></i> مسح</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>المنتسب</th>
+          <th>الكتاب</th>
+          <th>تاريخ الاستعارة</th>
+          <th>موعد الإرجاع</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in loans %}
+        <tr>
+          <td style="color:var(--text-muted); font-size:.8rem">{{ loan.pk }}</td>
+          <td>
+            {% if loan.member %}
+            <div style="font-weight:500; font-size:.88rem">{{ loan.member.full_name }}</div>
+            <div style="font-size:.75rem; color:var(--text-muted)">{{ loan.member.membership_number }}</div>
+            {% else %}
+            <div style="font-weight:500; font-size:.88rem">{{ loan.visitor_name|default:"زائر" }}</div>
+            <div style="font-size:.75rem; color:var(--gold)">
+              <i class="bi bi-person-walking"></i> زائر — {{ loan.visitor_fee }} MRU
+            </div>
+            {% endif %}
+          </td>
+          <td>
+            <div style="font-size:.88rem">{{ loan.book_copy.book.title|truncatechars:35 }}</div>
+            <div style="font-size:.75rem; color:var(--text-muted)">{{ loan.book_copy.book.author.full_name }}</div>
+          </td>
+          <td style="font-size:.85rem">{{ loan.loan_date }}</td>
+          <td style="font-size:.85rem">
+            {{ loan.due_date }}
+            {% if loan.status == 'overdue' %}
+            <div style="color:var(--danger); font-size:.73rem; font-weight:500">
+              متأخر {{ loan.days_overdue }} يوم
+            </div>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge-status badge-{{ loan.status }}">
+              {{ loan.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex; gap:.4rem">
+              <a href="{% url 'loan_detail' loan.pk %}" class="btn-icon" title="عرض">
+                <i class="bi bi-eye"></i>
+              </a>
+              {% if loan.status == 'active' or loan.status == 'overdue' %}
+              <a href="{% url 'loan_return' loan.pk %}" class="btn-icon"
+                 title="تسجيل الإرجاع"
+                 style="border-color:rgba(39,174,96,.3); color:var(--success)">
+                <i class="bi bi-check-circle"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:3rem; color:var(--text-muted)">
+            <i class="bi bi-arrow-left-right" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.4"></i>
+            لا توجد استعارات
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

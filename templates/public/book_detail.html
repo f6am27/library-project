@@ -1,0 +1,217 @@
+{% extends "public/base_public.html" %}
+{% block title %}{{ book.title }} — مكتبة دمشقية{% endblock %}
+
+{% block content %}
+<div class="container section">
+  <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-start">
+
+    <!-- الغلاف والأزرار -->
+    <div style="flex:0 0 260px">
+      <div style="border-radius:16px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,.15); margin-bottom:1.2rem">
+        <div style="height:340px; background:linear-gradient(135deg,var(--teal-dark),var(--teal))">
+          {% if book.cover_image %}
+          <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" style="width:100%; height:100%; object-fit:cover"/>
+          {% else %}
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:.6rem">
+            <i class="bi bi-book" style="font-size:4rem; color:rgba(255,255,255,.25)"></i>
+            <span style="color:rgba(255,255,255,.4); font-size:.8rem">بدون غلاف</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- حالة التوفر -->
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem; margin-bottom:1rem">
+
+        <!-- نسخ الاستعارة -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:.6rem 0; border-bottom:1px solid var(--border)">
+          <div style="font-size:.85rem; font-weight:500">
+            <i class="bi bi-arrow-left-right" style="color:var(--teal)"></i> الاستعارة
+          </div>
+          {% if loan_copies_available > 0 %}
+          <span style="background:rgba(39,174,96,.1); color:#27ae60; font-size:.78rem; padding:.2rem .6rem; border-radius:20px; font-weight:500">
+            {{ loan_copies_available }} نسخة متاحة
+          </span>
+          {% else %}
+          <span style="background:rgba(192,57,43,.08); color:#c0392b; font-size:.78rem; padding:.2rem .6rem; border-radius:20px">
+            غير متاح
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- نسخ البيع -->
+        {% if book.price %}
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:.6rem 0">
+          <div style="font-size:.85rem; font-weight:500">
+            <i class="bi bi-cart" style="color:var(--gold)"></i> البيع
+          </div>
+          {% if sale_copies_available > 0 %}
+          <span style="background:rgba(201,168,76,.12); color:var(--gold); font-size:.78rem; padding:.2rem .6rem; border-radius:20px; font-weight:500">
+            {{ sale_copies_available }} نسخة — {{ book.price }} MRU
+          </span>
+          {% else %}
+          <span style="background:rgba(192,57,43,.08); color:#c0392b; font-size:.78rem; padding:.2rem .6rem; border-radius:20px">
+            نفدت النسخ
+          </span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- الأزرار -->
+      <div style="display:flex; flex-direction:column; gap:.6rem">
+
+        <!-- زر الاستعارة -->
+        {% if request.user.is_authenticated and request.user.member_profile %}
+          {% if existing_request %}
+          <div style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.2); border-radius:10px; padding:.8rem; text-align:center; font-size:.85rem; color:var(--gold)">
+            <i class="bi bi-clock"></i> طلبك قيد المراجعة
+          </div>
+          {% elif has_active_loan %}
+          <div style="background:rgba(192,57,43,.06); border:1px solid rgba(192,57,43,.15); border-radius:10px; padding:.8rem; text-align:center; font-size:.82rem; color:#c0392b">
+            <i class="bi bi-info-circle"></i> لديك كتاب مستعار حالياً — أرجعه أولاً لتتمكن من الاستعارة
+          </div>
+          {% else %}
+            {% if loan_copies_available > 0 %}
+            <a href="{% url 'book_request' book.pk %}?type=loan" class="btn-primary" style="justify-content:center">
+              <i class="bi bi-arrow-left-right"></i> طلب استعارة
+            </a>
+            {% else %}
+            <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:.8rem; text-align:center; font-size:.82rem; color:var(--text-muted)">
+              <i class="bi bi-x-circle"></i> لا توجد نسخ للاستعارة حالياً
+            </div>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          {% if loan_copies_available > 0 %}
+          <a href="{% url 'member_login' %}" class="btn-primary" style="justify-content:center">
+            <i class="bi bi-person"></i> سجّل دخولك للاستعارة
+          </a>
+          {% else %}
+          <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:.8rem; text-align:center; font-size:.82rem; color:var(--text-muted)">
+            <i class="bi bi-x-circle"></i> لا توجد نسخ للاستعارة حالياً
+          </div>
+          {% endif %}
+        {% endif %}
+
+        <!-- زر الشراء -->
+        {% if book.price %}
+          {% if sale_copies_available > 0 %}
+          <a href="{{ purchase_url }}" target="_blank" class="btn-whatsapp" style="justify-content:center">
+            <i class="bi bi-whatsapp"></i> شراء عبر واتساب — {{ book.price }} MRU
+          </a>
+          {% else %}
+          <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:.8rem; text-align:center; font-size:.82rem; color:var(--text-muted)">
+            <i class="bi bi-cart-x"></i> نسخ البيع نفدت
+          </div>
+          {% endif %}
+        {% endif %}
+
+        <!-- استفسار دائم -->
+        <a href="{{ inquiry_url }}" target="_blank" class="btn-outline"
+           style="justify-content:center; border-color:#25D366; color:#25D366">
+          <i class="bi bi-whatsapp"></i> استفسار عبر واتساب
+        </a>
+      </div>
+    </div>
+
+    <!-- التفاصيل -->
+    <div style="flex:1; min-width:280px">
+
+      <!-- البيانات الأساسية -->
+      <div style="margin-bottom:1.5rem">
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem; flex-wrap:wrap">
+          <span style="background:var(--bg); color:var(--text-muted); font-size:.78rem; padding:.25rem .6rem; border-radius:6px">
+            {{ book.category.name }}
+          </span>
+          <span style="background:var(--bg); color:var(--text-muted); font-size:.78rem; padding:.25rem .6rem; border-radius:6px">
+            {{ book.get_language_display }}
+          </span>
+          {% if book.year_published %}
+          <span style="background:var(--bg); color:var(--text-muted); font-size:.78rem; padding:.25rem .6rem; border-radius:6px">
+            {{ book.year_published }}
+          </span>
+          {% endif %}
+        </div>
+        <h1 style="font-family:'Amiri',serif; font-size:1.9rem; line-height:1.3; margin-bottom:.5rem">
+          {{ book.title }}
+        </h1>
+        <div style="font-size:1rem; color:var(--text-muted); margin-bottom:.8rem">
+          <i class="bi bi-pen"></i> {{ book.author.full_name }}
+        </div>
+        {% if book.avg_rating > 0 %}
+        <div class="stars" style="font-size:1rem">
+          {% for i in "12345" %}
+          <i class="bi bi-star{% if forloop.counter <= book.avg_rating %}-fill{% endif %}"></i>
+          {% endfor %}
+          <span style="color:var(--text-muted); font-size:.85rem; margin-right:.3rem">{{ book.avg_rating }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- الوصف -->
+      {% if book.description %}
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem; margin-bottom:1.2rem">
+        <div style="font-weight:600; font-size:.85rem; color:var(--text-muted); margin-bottom:.7rem">
+          <i class="bi bi-file-text"></i> عن الكتاب
+        </div>
+        <p style="font-size:.9rem; line-height:1.8; color:var(--text)">{{ book.description }}</p>
+      </div>
+      {% endif %}
+
+      <!-- التقييمات -->
+      {% if reviews %}
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem; margin-bottom:1.2rem">
+        <div style="font-weight:600; font-size:.88rem; margin-bottom:1rem">
+          <i class="bi bi-star"></i> آراء القراء
+        </div>
+        <div style="display:flex; flex-direction:column; gap:.8rem">
+          {% for review in reviews %}
+          <div style="padding:.9rem; background:var(--bg); border-radius:10px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:.4rem">
+              <span style="font-weight:500; font-size:.85rem">{{ review.member.full_name }}</span>
+              <span class="stars" style="font-size:.82rem">
+                {% for i in "12345" %}
+                <i class="bi bi-star{% if forloop.counter <= review.rating %}-fill{% endif %}"></i>
+                {% endfor %}
+              </span>
+            </div>
+            {% if review.comment %}
+            <p style="font-size:.83rem; color:var(--text-muted); margin:0">{{ review.comment }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- كتب مشابهة -->
+      {% if related_books %}
+      <div>
+        <div style="font-weight:600; font-size:.88rem; margin-bottom:1rem">
+          <i class="bi bi-grid"></i> كتب مشابهة
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:.8rem">
+          {% for related in related_books %}
+          <a href="{% url 'public_book_detail' related.pk %}" style="text-decoration:none; color:var(--text)">
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; transition:transform .2s"
+                 onmouseover="this.style.transform='translateY(-2px)'"
+                 onmouseout="this.style.transform=''">
+              <div style="height:100px; background:linear-gradient(135deg,var(--teal-dark),var(--teal))">
+                {% if related.cover_image %}
+                <img src="{{ related.cover_image.url }}" style="width:100%; height:100%; object-fit:cover"/>
+                {% endif %}
+              </div>
+              <div style="padding:.6rem; font-size:.78rem; font-weight:500; line-height:1.3">
+                {{ related.title|truncatechars:30 }}
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

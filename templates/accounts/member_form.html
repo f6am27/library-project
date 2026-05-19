@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+{% block title %}{{ title }} — مكتبة دمشقية{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:750px">
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="bi bi-person-plus" style="color:var(--gold)"></i>
+      <span>{{ title }}</span>
+    </div>
+    <div style="padding:1.5rem">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- بيانات الحساب -->
+        {% if user_form %}
+        <div style="margin-bottom:1.8rem">
+          <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:1rem; padding-bottom:.7rem; border-bottom:2px solid var(--gold-pale)">
+            <i class="bi bi-person-circle" style="color:var(--gold)"></i>
+            <span style="font-weight:600; font-size:.9rem; color:var(--gold)">بيانات الحساب</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+            {% for field in user_form %}
+            <div>
+              <label class="form-label">
+                {{ field.label }}
+                {% if field.field.required %}<span style="color:var(--danger)">*</span>{% endif %}
+              </label>
+              {{ field }}
+              {% if field.errors %}
+              <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">
+                <i class="bi bi-exclamation-circle"></i> {{ field.errors|join:", " }}
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- بيانات الانتساب -->
+        <div style="margin-bottom:1.5rem">
+          <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:1rem; padding-bottom:.7rem; border-bottom:2px solid var(--gold-pale)">
+            <i class="bi bi-card-text" style="color:var(--gold)"></i>
+            <span style="font-weight:600; font-size:.9rem; color:var(--gold)">بيانات الانتساب</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+            {% for field in member_form %}
+            <div style="{% if field.name == 'address' or field.name == 'id_image' %}grid-column:1/-1{% endif %}">
+              <label class="form-label">
+                {{ field.label }}
+                {% if field.field.required %}<span style="color:var(--danger)">*</span>{% endif %}
+              </label>
+              {{ field }}
+              {% if field.name == 'id_image' and member.id_image %}
+              <div style="margin-top:.5rem; display:flex; align-items:center; gap:.6rem">
+                <img src="{{ member.id_image.url }}" style="height:60px; border-radius:6px; border:1px solid var(--border)"/>
+                <span style="font-size:.78rem; color:var(--text-muted)">الصورة الحالية</span>
+              </div>
+              {% endif %}
+              {% if field.errors %}
+              <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">
+                <i class="bi bi-exclamation-circle"></i> {{ field.errors|join:", " }}
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- أزرار -->
+        <div style="display:flex; gap:.8rem; padding-top:1.2rem; border-top:1px solid var(--border)">
+          <button type="submit" class="btn-gold">
+            <i class="bi bi-check-lg"></i> حفظ
+          </button>
+          <a href="{% url 'member_list' %}" class="btn-outline-custom">
+            <i class="bi bi-x"></i> إلغاء
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

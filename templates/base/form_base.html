@@ -1,0 +1,83 @@
+{% extends "base/base.html" %}
+{% block title %}{{ title }} — مكتبة دمشقية{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:700px">
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="bi bi-pencil-square"></i>
+      <span>{{ title }}</span>
+    </div>
+    <div style="padding:1.5rem">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if user_form %}
+        <div style="margin-bottom:1.5rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border)">
+          <div style="font-size:.8rem; color:var(--gold); font-weight:600; letter-spacing:.05em; margin-bottom:1rem">
+            بيانات الحساب
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+            {% for field in user_form %}
+            <div style="{% if forloop.last and forloop.counter|divisibleby:2 == False %}grid-column:1/-1{% endif %}">
+              <label class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+              <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">{{ field.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if member_form %}
+        <div style="margin-bottom:1rem">
+          <div style="font-size:.8rem; color:var(--gold); font-weight:600; letter-spacing:.05em; margin-bottom:1rem">
+            بيانات الانتساب
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+            {% for field in member_form %}
+            <div style="{% if field.field.widget.input_type == 'textarea' or field.name == 'id_image' %}grid-column:1/-1{% endif %}">
+              <label class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+              <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">{{ field.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if form %}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+          {% for field in form %}
+          <div style="{% if field.field.widget.input_type == 'textarea' or field.name == 'description' or field.name == 'bio' or field.name == 'cover_image' %}grid-column:1/-1{% endif %}">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+            <div style="color:var(--text-muted); font-size:.75rem; margin-top:.25rem">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+            <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">{{ field.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="display:flex; gap:.8rem; margin-top:1.8rem; padding-top:1.2rem; border-top:1px solid var(--border)">
+          <button type="submit" class="btn-gold">
+            <i class="bi bi-check-lg"></i> حفظ
+          </button>
+          <a href="javascript:history.back()" class="btn-outline-custom">
+            <i class="bi bi-x"></i> إلغاء
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

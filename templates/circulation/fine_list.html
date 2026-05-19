@@ -1,0 +1,86 @@
+{% extends "base/base.html" %}
+{% block title %}الغرامات — مكتبة دمشقية{% endblock %}
+{% block page_title %}إدارة الغرامات{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">الغرامات غير المدفوعة</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ fines.count }} غرامة معلقة</p>
+  </div>
+</div>
+
+{% if fines %}
+<div style="background:rgba(192,57,43,.08); border:1px solid rgba(192,57,43,.2); border-radius:12px; padding:1rem 1.2rem; margin-bottom:1.3rem; display:flex; align-items:center; gap:.8rem">
+  <i class="bi bi-exclamation-triangle-fill" style="color:var(--danger)"></i>
+  <div>
+    إجمالي الغرامات المعلقة:
+    <strong style="color:var(--danger)">
+      {{ fines|length }}
+    </strong> غرامة
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>المنتسب</th>
+          <th>الكتاب</th>
+          <th>المبلغ</th>
+          <th>السبب</th>
+          <th>تاريخ الإنشاء</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fine in fines %}
+        <tr>
+          <td>
+            <div style="font-weight:500; font-size:.88rem">
+              {{ fine.loan.member.full_name }}
+            </div>
+            <div style="font-size:.75rem; color:var(--text-muted)">
+              {{ fine.loan.member.membership_number }}
+            </div>
+          </td>
+          <td style="font-size:.85rem">
+            {{ fine.loan.book_copy.book.title|truncatechars:35 }}
+          </td>
+          <td>
+            <span style="font-weight:700; color:var(--danger); font-size:.95rem">
+              {{ fine.amount }} MRU
+            </span>
+          </td>
+          <td style="color:var(--text-muted); font-size:.83rem">
+            {{ fine.reason|default:"تأخر في الإرجاع" }}
+          </td>
+          <td style="font-size:.83rem; color:var(--text-muted)">
+            {{ fine.created_at|date:"Y-m-d" }}
+          </td>
+          <td>
+            <form method="post" action="{% url 'fine_pay' fine.pk %}"
+                  onsubmit="return confirm('تأكيد استلام الدفع؟')" style="display:inline">
+              {% csrf_token %}
+              <button type="submit" class="btn-primary-custom"
+                      style="font-size:.8rem; padding:.4rem .8rem; background:var(--success)">
+                <i class="bi bi-check-circle"></i> تم الدفع
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted)">
+            <i class="bi bi-check-circle" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.4; color:var(--success)"></i>
+            لا توجد غرامات معلقة 🎉
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

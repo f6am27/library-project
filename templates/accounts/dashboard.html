@@ -1,0 +1,139 @@
+{% extends "base/base.html" %}
+{% block title %}لوحة التحكم — مكتبة دمشقية{% endblock %}
+{% block page_title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1.5rem">
+  <h1 style="font-size:1.3rem; font-weight:600">أهلاً، {{ request.user.get_full_name|default:request.user.username }} 👋</h1>
+  <p style="color:var(--text-muted); font-size:.88rem; margin-top:.3rem">
+    إليك ملخص نشاط المكتبة اليوم
+  </p>
+</div>
+
+<!-- Stat Cards -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:1.8rem">
+  <a href="{% url 'member_list' %}?status=active" style="text-decoration:none">
+    <div class="stat-card">
+      <div class="stat-icon teal"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <div class="stat-value">{{ total_members }}</div>
+        <div class="stat-label">منتسب نشط</div>
+      </div>
+    </div>
+  </a>
+  <a href="{% url 'book_list' %}" style="text-decoration:none">
+    <div class="stat-card">
+      <div class="stat-icon gold"><i class="bi bi-book-fill"></i></div>
+      <div>
+        <div class="stat-value">{{ total_books }}</div>
+        <div class="stat-label">إجمالي الكتب</div>
+      </div>
+    </div>
+  </a>
+  <a href="{% url 'loan_list' %}?status=active" style="text-decoration:none">
+    <div class="stat-card">
+      <div class="stat-icon success"><i class="bi bi-arrow-left-right"></i></div>
+      <div>
+        <div class="stat-value">{{ active_loans }}</div>
+        <div class="stat-label">استعارة نشطة</div>
+      </div>
+    </div>
+  </a>
+  <a href="{% url 'loan_list' %}?status=overdue" style="text-decoration:none">
+    <div class="stat-card">
+      <div class="stat-icon danger"><i class="bi bi-clock-history"></i></div>
+      <div>
+        <div class="stat-value">{{ overdue_loans }}</div>
+        <div class="stat-label">استعارة متأخرة</div>
+      </div>
+    </div>
+  </a>
+  <a href="{% url 'fine_list' %}" style="text-decoration:none">
+    <div class="stat-card">
+      <div class="stat-icon danger"><i class="bi bi-exclamation-circle"></i></div>
+      <div>
+        <div class="stat-value">{{ unpaid_fines }}</div>
+        <div class="stat-label">غرامة غير مدفوعة</div>
+      </div>
+    </div>
+  </a>
+  <a href="{% url 'member_list' %}?status=expired" style="text-decoration:none">
+    <div class="stat-card">
+      <div class="stat-icon danger"><i class="bi bi-person-x"></i></div>
+      <div>
+        <div class="stat-value">{{ expired_members }}</div>
+        <div class="stat-label">اشتراك منتهٍ</div>
+      </div>
+    </div>
+  </a>
+</div>
+
+<!-- تنبيه اشتراكات تنتهي قريباً -->
+{% if expiring_soon > 0 %}
+<div style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.3); border-radius:12px; padding:1rem 1.2rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:.8rem">
+  <i class="bi bi-bell-fill" style="color:var(--gold); font-size:1.1rem"></i>
+  <div>
+    <strong>{{ expiring_soon }} منتسب</strong> اشتراكهم ينتهي خلال 7 أيام
+    <a href="{% url 'member_list' %}" style="color:var(--teal); margin-right:.5rem; font-size:.85rem">عرض القائمة ←</a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div style="margin-bottom:1.5rem">
+  <div style="font-size:.85rem; color:var(--text-muted); margin-bottom:.8rem; font-weight:500">إجراءات سريعة</div>
+  <div style="display:flex; flex-wrap:wrap; gap:.7rem">
+    <a href="{% url 'member_create' %}" class="btn-primary-custom">
+      <i class="bi bi-person-plus"></i> منتسب جديد
+    </a>
+    <a href="{% url 'loan_create' %}" class="btn-gold">
+      <i class="bi bi-plus-circle"></i> استعارة جديدة
+    </a>
+    <a href="{% url 'book_create' %}" class="btn-outline-custom">
+      <i class="bi bi-book"></i> إضافة كتاب
+    </a>
+    <a href="{% url 'loan_list' %}?status=overdue" class="btn-outline-custom" style="border-color:var(--danger); color:var(--danger)">
+      <i class="bi bi-clock-history"></i> الاستعارات المتأخرة
+    </a>
+    <a href="{% url 'visitor_loan' %}" class="btn-outline-custom">
+      <i class="bi bi-person-walking"></i> استعارة زائر
+    </a>
+    <a href="{% url 'direct_sale' %}" class="btn-outline-custom">
+      <i class="bi bi-cart-check"></i> تسجيل بيع مباشر
+    </a>
+  </div>
+</div>
+<!-- الإيرادات الشهرية -->
+<div class="card" style="margin-top:1.5rem">
+  <div class="card-header-custom">
+    <i class="bi bi-graph-up-arrow" style="color:var(--gold)"></i>
+    <span>إيرادات هذا الشهر</span>
+  </div>
+  <div style="padding:1.2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem">
+    <div style="background:var(--bg); border-radius:12px; padding:1rem; text-align:center">
+      <div style="font-size:.78rem; color:var(--text-muted); margin-bottom:.4rem">اشتراكات شهرية</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--teal)">{{ monthly_revenue }} MRU</div>
+    </div>
+    <div style="background:var(--bg); border-radius:12px; padding:1rem; text-align:center">
+      <div style="font-size:.78rem; color:var(--text-muted); margin-bottom:.4rem">اشتراكات سنوية</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--teal)">{{ yearly_revenue }} MRU</div>
+    </div>
+    <div style="background:var(--bg); border-radius:12px; padding:1rem; text-align:center">
+      <div style="font-size:.78rem; color:var(--text-muted); margin-bottom:.4rem">مبيعات الكتب</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--gold)">{{ book_sales_revenue }} MRU</div>
+    </div>
+    <div style="background:var(--bg); border-radius:12px; padding:1rem; text-align:center">
+      <div style="font-size:.78rem; color:var(--text-muted); margin-bottom:.4rem">استعارة الزوار</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--teal)">{{ visitor_loans_revenue }} MRU</div>
+    </div>
+    <div style="background:var(--bg); border-radius:12px; padding:1rem; text-align:center">
+      <div style="font-size:.78rem; color:var(--text-muted); margin-bottom:.4rem">الغرامات المحصلة</div>
+      <div style="font-size:1.2rem; font-weight:700; color:var(--danger)">{{ fines_revenue }} MRU</div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--teal-dark),var(--teal)); border-radius:12px; padding:1rem; text-align:center">
+      <div style="font-size:.78rem; color:rgba(255,255,255,.7); margin-bottom:.4rem">إجمالي الإيرادات</div>
+      <div style="font-size:1.4rem; font-weight:700; color:var(--gold)">{{ total_revenue }} MRU</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

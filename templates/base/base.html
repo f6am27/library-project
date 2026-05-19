@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}مكتبة دمشقية{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal:       #2d6b6b;
+      --teal-dark:  #1e4a4a;
+      --teal-light: #3d8b8b;
+      --gold:       #c9a84c;
+      --gold-light: #e2c278;
+      --gold-pale:  #f5e9c8;
+      --sidebar-w:  260px;
+      --bg:         #f4f1eb;
+      --surface:    #ffffff;
+      --text:       #1a1a1a;
+      --text-muted: #6b7280;
+      --border:     #e5e0d5;
+      --danger:     #c0392b;
+      --success:    #27ae60;
+      --warning:    #e67e22;
+    }
+    [data-theme="dark"] {
+      --bg:         #0f1e1e;
+      --surface:    #162828;
+      --text:       #f0ebe0;
+      --text-muted: #9ca3af;
+      --border:     #2a3d3d;
+      --teal:       #3d8b8b;
+      --teal-dark:  #2d6b6b;
+      --gold:       #e2c278;
+      --gold-pale:  #2a2210;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      transition: background .3s, color .3s;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--teal-dark);
+      position: fixed;
+      right: 0; top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: transform .3s;
+      overflow: hidden;
+    }
+    .sidebar-logo {
+      padding: 1.5rem 1.2rem;
+      border-bottom: 1px solid rgba(201,168,76,.2);
+      display: flex; align-items: center; gap: .8rem;
+      flex-shrink: 0;
+    }
+    .sidebar-logo .logo-icon {
+      width: 42px; height: 42px;
+      background: var(--gold);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Amiri', serif;
+      font-size: 1.3rem; color: var(--teal-dark);
+      font-weight: 700; flex-shrink: 0;
+    }
+    .sidebar-logo .logo-text {
+      font-family: 'Amiri', serif;
+      color: var(--gold);
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+    .sidebar-logo .logo-sub {
+      color: rgba(255,255,255,.5);
+      font-size: .75rem;
+    }
+
+    /* القائمة تأخذ كل المساحة المتبقية وتتمرر */
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+    }
+    .sidebar-nav::-webkit-scrollbar { display: none; }
+
+    .nav-section {
+      padding: .4rem 1rem .2rem;
+      font-size: .68rem;
+      color: rgba(201,168,76,.6);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .nav-link-item {
+      display: flex; align-items: center; gap: .7rem;
+      padding: .65rem 1.2rem;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      font-size: .9rem;
+      transition: all .2s;
+      border-right: 3px solid transparent;
+      margin: .1rem 0;
+    }
+    .nav-link-item:hover, .nav-link-item.active {
+      background: rgba(201,168,76,.12);
+      color: var(--gold-light);
+      border-right-color: var(--gold);
+    }
+    .nav-link-item i { font-size: 1rem; width: 20px; text-align: center; }
+    .nav-badge {
+      margin-right: auto;
+      background: var(--gold);
+      color: var(--teal-dark);
+      font-size: .68rem;
+      padding: .15rem .45rem;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    /* ── Main ── */
+    .main-wrapper {
+      margin-right: var(--sidebar-w);
+      flex: 1;
+      display: flex; flex-direction: column;
+      min-height: 100vh;
+    }
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: .8rem 1.8rem;
+      display: flex; align-items: center; gap: 1rem;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1.05rem; font-weight: 500; flex: 1; }
+    .topbar-actions { display: flex; align-items: center; gap: .6rem; }
+    .btn-icon {
+      width: 36px; height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .2s; position: relative;
+    }
+    .btn-icon:hover { border-color: var(--gold); color: var(--gold); }
+    .notif-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px;
+      background: var(--gold); border-radius: 50%;
+    }
+    .page-content { padding: 1.8rem; flex: 1; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .card-header-custom {
+      padding: 1rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: .7rem;
+      font-weight: 500;
+    }
+    .card-header-custom i { color: var(--gold); }
+
+    /* ── Stat Cards ── */
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.3rem;
+      display: flex; align-items: center; gap: 1rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+    .stat-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .stat-icon.teal   { background: rgba(45,107,107,.12); color: var(--teal); }
+    .stat-icon.gold   { background: rgba(201,168,76,.15); color: var(--gold); }
+    .stat-icon.danger { background: rgba(192,57,43,.1);   color: var(--danger); }
+    .stat-icon.success{ background: rgba(39,174,96,.1);   color: var(--success); }
+    .stat-value { font-size: 1.7rem; font-weight: 700; line-height: 1; }
+    .stat-label { color: var(--text-muted); font-size: .82rem; margin-top: .25rem; }
+
+    /* ── Tables ── */
+    .table-custom { width: 100%; border-collapse: collapse; }
+    .table-custom th {
+      background: var(--bg);
+      padding: .75rem 1rem;
+      font-size: .78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    .table-custom td {
+      padding: .85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .88rem;
+      vertical-align: middle;
+    }
+    .table-custom tr:last-child td { border-bottom: none; }
+    .table-custom tr:hover td { background: rgba(201,168,76,.04); }
+
+    /* ── Badges ── */
+    .badge-status {
+      padding: .3rem .7rem; border-radius: 20px;
+      font-size: .75rem; font-weight: 500;
+    }
+    .badge-active    { background: rgba(39,174,96,.12);  color: var(--success); }
+    .badge-expired   { background: rgba(192,57,43,.1);   color: var(--danger); }
+    .badge-suspended { background: rgba(230,126,34,.1);  color: var(--warning); }
+    .badge-overdue   { background: rgba(192,57,43,.1);   color: var(--danger); }
+    .badge-returned  { background: rgba(39,174,96,.12);  color: var(--success); }
+    .badge-pending   { background: rgba(201,168,76,.15); color: var(--gold); }
+
+    /* ── Buttons ── */
+    .btn-primary-custom {
+      background: var(--teal);
+      color: #fff; border: none;
+      padding: .55rem 1.2rem; border-radius: 9px;
+      font-family: 'Tajawal', sans-serif;
+      font-size: .9rem; cursor: pointer;
+      transition: background .2s, transform .1s;
+      display: inline-flex; align-items: center; gap: .4rem;
+    }
+    .btn-primary-custom:hover { background: var(--teal-light); color: #fff; }
+    .btn-gold {
+      background: var(--gold); color: var(--teal-dark);
+      border: none; padding: .55rem 1.2rem; border-radius: 9px;
+      font-family: 'Tajawal', sans-serif; font-size: .9rem;
+      cursor: pointer; font-weight: 600;
+      transition: background .2s;
+      display: inline-flex; align-items: center; gap: .4rem;
+    }
+    .btn-gold:hover { background: var(--gold-light); }
+    .btn-outline-custom {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text); padding: .5rem 1rem;
+      border-radius: 9px; font-family: 'Tajawal', sans-serif;
+      font-size: .85rem; cursor: pointer;
+      transition: all .2s;
+      display: inline-flex; align-items: center; gap: .4rem;
+    }
+    .btn-outline-custom:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── Forms ── */
+    .form-control, .form-select {
+      font-family: 'Tajawal', sans-serif;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      padding: .6rem .9rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(45,107,107,.12);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .form-label { font-size: .85rem; color: var(--text-muted); margin-bottom: .35rem; }
+
+    /* ── Search bar ── */
+    .search-wrap { position: relative; }
+    .search-wrap i {
+      position: absolute; right: .9rem; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted); pointer-events: none;
+    }
+    .search-wrap input { padding-right: 2.4rem; }
+
+    /* ── Alerts ── */
+    .alert-custom {
+      padding: .8rem 1rem; border-radius: 10px;
+      margin-bottom: 1rem; font-size: .88rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .alert-success { background: rgba(39,174,96,.1); color: var(--success); }
+    .alert-error   { background: rgba(192,57,43,.1); color: var(--danger); }
+    .alert-warning { background: rgba(230,126,34,.1); color: var(--warning); }
+
+    /* ── Mobile ── */
+    .sidebar-toggle { display: none; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-wrapper { margin-right: 0; }
+      .sidebar-toggle { display: flex; }
+      .page-content { padding: 1rem; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+
+  <!-- الشعار -->
+  <div class="sidebar-logo">
+    <div class="logo-icon">د</div>
+    <div>
+      <div class="logo-text">مكتبة دمشقية</div>
+      <div class="logo-sub">لوحة الإدارة</div>
+    </div>
+  </div>
+
+  <!-- القائمة كاملة قابلة للتمرير -->
+  <nav class="sidebar-nav">
+
+    <div class="nav-section">الرئيسية</div>
+    <a href="{% url 'dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-grid-1x2"></i> لوحة التحكم
+    </a>
+
+    <div class="nav-section">المنتسبون</div>
+    <a href="{% url 'member_list' %}" class="nav-link-item {% if 'member' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-people"></i> المنتسبون
+    </a>
+
+    <div class="nav-section">المكتبة</div>
+    <a href="{% url 'book_list' %}" class="nav-link-item {% if 'book' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-book"></i> الكتب
+    </a>
+    <a href="{% url 'author_list' %}" class="nav-link-item {% if 'author' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-pen"></i> المؤلفون
+    </a>
+    <a href="{% url 'category_list' %}" class="nav-link-item {% if 'category' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-tag"></i> التصنيفات
+    </a>
+
+    <div class="nav-section">الطلبات</div>
+    <a href="{% url 'request_list' %}" class="nav-link-item {% if 'request' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-inbox"></i> طلبات المنتسبين
+    </a>
+
+    <div class="nav-section">الاستعارة</div>
+    <a href="{% url 'loan_list' %}" class="nav-link-item {% if 'loan' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-arrow-left-right"></i> الاستعارات
+    </a>
+    <a href="{% url 'visitor_loan' %}" class="nav-link-item {% if 'visitor' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-person-walking"></i> استعارة زائر
+    </a>
+    <a href="{% url 'direct_sale' %}" class="nav-link-item {% if 'direct_sale' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-cart-check"></i> تسجيل بيع مباشر
+    </a>
+    <a href="{% url 'reservation_list' %}" class="nav-link-item {% if 'reservation' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-bookmark"></i> الحجوزات
+    </a>
+    <a href="{% url 'fine_list' %}" class="nav-link-item {% if 'fine' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-exclamation-circle"></i> الغرامات
+    </a>
+
+    <div class="nav-section">الإشعارات</div>
+    <a href="{% url 'notification_list' %}" class="nav-link-item {% if 'notification' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-bell"></i> الإشعارات
+      <span class="nav-badge" id="notif-count" style="display:none">0</span>
+    </a>
+
+    {% if request.user.admin_profile.role == 'super_admin' %}
+    <div class="nav-section">الإدارة</div>
+    <a href="{% url 'admin_list' %}" class="nav-link-item {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-shield-check"></i> الإداريون
+    </a>
+    <a href="{% url 'audit_log_list' %}" class="nav-link-item {% if 'audit' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-journal-text"></i> سجل العمليات
+    </a>
+    {% endif %}
+
+    <!-- زر تسجيل الخروج مع باقي الروابط -->
+    <div class="nav-section">الحساب</div>
+    <a href="{% url 'logout' %}" class="nav-link-item" style="color:rgba(255,120,120,.85)">
+      <i class="bi bi-box-arrow-right"></i> تسجيل الخروج
+    </a>
+
+  </nav>
+</aside>
+
+<!-- Main -->
+<div class="main-wrapper">
+  <header class="topbar">
+    <button class="btn-icon sidebar-toggle" onclick="toggleSidebar()">
+      <i class="bi bi-list"></i>
+    </button>
+    <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+    <div class="topbar-actions">
+      <button class="btn-icon" onclick="toggleTheme()" title="الوضع الليلي">
+        <i class="bi bi-moon-stars" id="theme-icon"></i>
+      </button>
+      <a href="{% url 'notification_list' %}" class="btn-icon" style="text-decoration:none; color:inherit">
+        <i class="bi bi-bell"></i>
+        <span class="notif-dot" id="notif-dot" style="display:none"></span>
+      </a>
+      <form action="{% url 'set_language' %}" method="post" style="display:inline">
+        {% csrf_token %}
+        <select name="language" class="form-select form-select-sm" style="width:auto; font-size:.8rem; padding:.3rem .6rem"
+                onchange="this.form.submit()">
+          <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>ع</option>
+          <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>FR</option>
+          <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>EN</option>
+        </select>
+      </form>
+    </div>
+  </header>
+
+  <main class="page-content">
+    {% for message in messages %}
+    <div class="alert-custom alert-{{ message.tags }}">
+      <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}x-circle{% else %}exclamation-triangle{% endif %}"></i>
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const saved = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('theme-icon').className = saved === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    document.getElementById('theme-icon').className = next === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+
+  function fetchNotifCount() {
+    fetch("{% url 'notification_count' %}")
+      .then(r => r.json())
+      .then(data => {
+        const dot   = document.getElementById('notif-dot');
+        const badge = document.getElementById('notif-count');
+        if (data.count > 0) {
+          dot.style.display = 'block';
+          badge.style.display = 'inline';
+          badge.textContent = data.count;
+        } else {
+          dot.style.display = 'none';
+          badge.style.display = 'none';
+        }
+      }).catch(() => {});
+  }
+  fetchNotifCount();
+  setInterval(fetchNotifCount, 30000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

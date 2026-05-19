@@ -1,0 +1,105 @@
+{% extends "base/base.html" %}
+{% block title %}تسجيل إرجاع — مكتبة دمشقية{% endblock %}
+{% block page_title %}تسجيل إرجاع كتاب{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+
+  <!-- معلومات الاستعارة -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header-custom">
+      <i class="bi bi-info-circle"></i>
+      <span>معلومات الاستعارة</span>
+    </div>
+    <div style="padding:1.2rem; display:grid; grid-template-columns:1fr 1fr; gap:.8rem">
+      <div style="font-size:.85rem">
+        <div style="color:var(--text-muted); margin-bottom:.2rem">المنتسب</div>
+        <div style="font-weight:600">{{ loan.member.full_name }}</div>
+        <div style="font-size:.78rem; color:var(--text-muted)">{{ loan.member.membership_number }}</div>
+      </div>
+      <div style="font-size:.85rem">
+        <div style="color:var(--text-muted); margin-bottom:.2rem">الكتاب</div>
+        <div style="font-weight:600">{{ loan.book_copy.book.title|truncatechars:35 }}</div>
+      </div>
+      <div style="font-size:.85rem">
+        <div style="color:var(--text-muted); margin-bottom:.2rem">تاريخ الاستعارة</div>
+        <div>{{ loan.loan_date }}</div>
+      </div>
+      <div style="font-size:.85rem">
+        <div style="color:var(--text-muted); margin-bottom:.2rem">موعد الإرجاع</div>
+        <div style="{% if days_overdue > 0 %}color:var(--danger); font-weight:600{% endif %}">
+          {{ loan.due_date }}
+        </div>
+      </div>
+    </div>
+
+    <!-- تنبيه تأخر -->
+    {% if days_overdue > 0 %}
+    <div style="margin:0 1.2rem 1.2rem; background:rgba(192,57,43,.08); border:1px solid rgba(192,57,43,.2); border-radius:10px; padding:.9rem; display:flex; align-items:center; gap:.7rem">
+      <i class="bi bi-exclamation-triangle-fill" style="color:var(--danger); font-size:1.1rem"></i>
+      <div>
+        <div style="font-weight:600; color:var(--danger); font-size:.88rem">
+          متأخر {{ days_overdue }} يوم
+        </div>
+        <div style="font-size:.78rem; color:var(--text-muted)">
+          يُنصح بإضافة غرامة تأخير
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- نموذج الإرجاع -->
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="bi bi-check-circle"></i>
+      <span>تفاصيل الإرجاع</span>
+    </div>
+    <div style="padding:1.5rem">
+      <form method="post">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:1.1rem">
+
+          <!-- الغرامة -->
+          <div style="background:var(--bg); border-radius:12px; padding:1rem">
+            <div style="font-size:.85rem; font-weight:600; margin-bottom:.8rem; color:var(--text-muted)">
+              <i class="bi bi-exclamation-circle"></i> الغرامة (اختياري)
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem">
+              <div>
+                <label class="form-label">المبلغ (MRU)</label>
+                {{ form.fine_amount }}
+              </div>
+              <div>
+                <label class="form-label">السبب</label>
+                {{ form.fine_reason }}
+              </div>
+            </div>
+            {% if days_overdue > 0 %}
+            <div style="margin-top:.6rem; font-size:.78rem; color:var(--text-muted)">
+              <i class="bi bi-lightbulb"></i>
+              مقترح: {{ days_overdue }} × 100 = <strong>{{ days_overdue|add:0 }}00 MRU</strong>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- ملاحظات -->
+          <div>
+            <label class="form-label">ملاحظات</label>
+            {{ form.notes }}
+          </div>
+        </div>
+
+        <div style="display:flex; gap:.8rem; margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--border)">
+          <button type="submit" class="btn-primary-custom" style="background:var(--success)">
+            <i class="bi bi-check-lg"></i> تأكيد الإرجاع
+          </button>
+          <a href="{% url 'loan_list' %}" class="btn-outline-custom">
+            <i class="bi bi-x"></i> إلغاء
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

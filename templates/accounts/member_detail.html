@@ -1,0 +1,137 @@
+{% extends "base/base.html" %}
+{% block title %}{{ member.full_name }} — مكتبة دمشقية{% endblock %}
+{% block page_title %}تفاصيل المنتسب{% endblock %}
+
+{% block content %}
+<div style="display:flex; gap:1.2rem; flex-wrap:wrap; align-items:flex-start">
+
+  <!-- البطاقة الشخصية -->
+  <div style="flex:0 0 280px">
+    <div class="card" style="padding:1.5rem; text-align:center; margin-bottom:1rem">
+      <div style="width:72px; height:72px; background:linear-gradient(135deg,var(--teal-dark),var(--teal)); border-radius:18px; display:flex; align-items:center; justify-content:center; color:var(--gold); font-size:1.8rem; font-weight:700; margin:0 auto 1rem">
+        {{ member.full_name|first }}
+      </div>
+      <div style="font-weight:700; font-size:1.05rem; margin-bottom:.3rem">{{ member.full_name }}</div>
+      <div style="font-family:monospace; background:var(--bg); padding:.3rem .7rem; border-radius:8px; font-size:.82rem; color:var(--text-muted); display:inline-block; margin-bottom:.8rem">
+        {{ member.membership_number }}
+      </div>
+      <div>
+        <span class="badge-status badge-{{ member.status }}">{{ member.get_status_display }}</span>
+      </div>
+
+      <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--border); text-align:right; display:flex; flex-direction:column; gap:.6rem">
+        <div style="font-size:.82rem; display:flex; justify-content:space-between">
+          <span style="color:var(--text-muted)">الخطة</span>
+          <span style="font-weight:500">{{ member.plan.name }}</span>
+        </div>
+        <div style="font-size:.82rem; display:flex; justify-content:space-between">
+          <span style="color:var(--text-muted)">رقم الهوية</span>
+          <span style="font-weight:500">{{ member.national_id }}</span>
+        </div>
+        <div style="font-size:.82rem; display:flex; justify-content:space-between">
+          <span style="color:var(--text-muted)">بداية الاشتراك</span>
+          <span>{{ member.membership_start }}</span>
+        </div>
+        <div style="font-size:.82rem; display:flex; justify-content:space-between">
+          <span style="color:var(--text-muted)">نهاية الاشتراك</span>
+          <span style="{% if member.status == 'expired' %}color:var(--danger); font-weight:600{% endif %}">
+            {{ member.membership_end }}
+          </span>
+        </div>
+        {% if member.user.phone %}
+        <div style="font-size:.82rem; display:flex; justify-content:space-between">
+          <span style="color:var(--text-muted)">الهاتف</span>
+          <span>{{ member.user.phone }}</span>
+        </div>
+        {% endif %}
+        {% if member.user.email %}
+        <div style="font-size:.82rem; display:flex; justify-content:space-between">
+          <span style="color:var(--text-muted)">البريد</span>
+          <span style="font-size:.78rem">{{ member.user.email }}</span>
+        </div>
+        {% endif %}
+        {% if member.address %}
+        <div style="font-size:.82rem">
+          <span style="color:var(--text-muted); display:block; margin-bottom:.2rem">العنوان</span>
+          <span>{{ member.address }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if member.id_image %}
+      <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border)">
+        <div style="font-size:.78rem; color:var(--text-muted); margin-bottom:.5rem">صورة الهوية</div>
+        <img src="{{ member.id_image.url }}" style="width:100%; border-radius:8px; border:1px solid var(--border)"/>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- أزرار الإجراءات -->
+    <div style="display:flex; flex-direction:column; gap:.5rem">
+      <a href="{% url 'member_update' member.pk %}" class="btn-primary-custom" style="justify-content:center">
+        <i class="bi bi-pencil"></i> تعديل البيانات
+      </a>
+      {% if member.status == 'active' %}
+      <form method="post" action="{% url 'member_suspend' member.pk %}"
+            onsubmit="return confirm('هل تريد إيقاف هذا المنتسب؟')">
+        {% csrf_token %}
+        <button type="submit" class="btn-outline-custom" style="width:100%; justify-content:center; border-color:rgba(192,57,43,.3); color:var(--danger)">
+          <i class="bi bi-pause-circle"></i> إيقاف الانتساب
+        </button>
+      </form>
+      {% endif %}
+      <a href="{% url 'loan_create' %}" class="btn-gold" style="justify-content:center">
+        <i class="bi bi-plus-circle"></i> استعارة جديدة
+      </a>
+    </div>
+  </div>
+
+  <!-- سجل الاستعارات -->
+  <div style="flex:1; min-width:300px">
+    <div class="card">
+      <div class="card-header-custom">
+        <i class="bi bi-clock-history"></i>
+        <span>سجل الاستعارات</span>
+        <span style="margin-right:auto; background:var(--bg); padding:.2rem .6rem; border-radius:20px; font-size:.78rem; color:var(--text-muted)">
+          آخر {{ loans.count }}
+        </span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th>الكتاب</th>
+              <th>تاريخ الاستعارة</th>
+              <th>موعد الإرجاع</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for loan in loans %}
+            <tr>
+              <td>
+                <a href="{% url 'loan_detail' loan.pk %}" style="color:var(--teal); text-decoration:none; font-size:.87rem; font-weight:500">
+                  {{ loan.book_copy.book.title|truncatechars:30 }}
+                </a>
+              </td>
+              <td style="font-size:.82rem; color:var(--text-muted)">{{ loan.loan_date }}</td>
+              <td style="font-size:.82rem">{{ loan.due_date }}</td>
+              <td>
+                <span class="badge-status badge-{{ loan.status }}">{{ loan.get_status_display }}</span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted)">
+                لا توجد استعارات سابقة
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

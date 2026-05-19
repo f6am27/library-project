@@ -1,0 +1,77 @@
+{% extends "base/base.html" %}
+{% block title %}الحجوزات — مكتبة دمشقية{% endblock %}
+{% block page_title %}إدارة الحجوزات{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">الحجوزات</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ reservations.count }} حجز</p>
+  </div>
+  <a href="{% url 'reservation_create' %}" class="btn-primary-custom">
+    <i class="bi bi-bookmark-plus"></i> حجز جديد
+  </a>
+</div>
+
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>المنتسب</th>
+          <th>الكتاب</th>
+          <th>تاريخ الحجز</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for res in reservations %}
+        <tr>
+          <td>
+            <div style="font-weight:500; font-size:.88rem">{{ res.member.full_name }}</div>
+            <div style="font-size:.75rem; color:var(--text-muted)">{{ res.member.membership_number }}</div>
+          </td>
+          <td>
+            <div style="font-size:.88rem">{{ res.book.title|truncatechars:40 }}</div>
+            <div style="font-size:.75rem; color:var(--text-muted)">{{ res.book.author.full_name }}</div>
+          </td>
+          <td style="font-size:.85rem; color:var(--text-muted)">
+            {{ res.reserved_at|date:"Y-m-d" }}
+          </td>
+          <td>
+            <span class="badge-status badge-{{ res.status }}">
+              {{ res.get_status_display }}
+            </span>
+            {% if res.notified %}
+            <span style="font-size:.72rem; color:var(--success); display:block; margin-top:.2rem">
+              <i class="bi bi-check2"></i> تم الإشعار
+            </span>
+            {% endif %}
+          </td>
+          <td>
+            {% if res.status == 'pending' or res.status == 'ready' %}
+            <form method="post" action="{% url 'reservation_cancel' res.pk %}"
+                  onsubmit="return confirm('هل تريد إلغاء هذا الحجز؟')" style="display:inline">
+              {% csrf_token %}
+              <button type="submit" class="btn-icon" title="إلغاء"
+                      style="border-color:rgba(192,57,43,.3); color:var(--danger)">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted)">
+            <i class="bi bi-bookmark" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.4"></i>
+            لا توجد حجوزات
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

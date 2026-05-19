@@ -1,0 +1,176 @@
+{% extends "public/base_public.html" %}
+{% block title %}مكتبة دمشقية — الصفحة الرئيسية{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div style="background:linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%); padding:4rem 0; position:relative; overflow:hidden">
+  <div style="position:absolute; inset:0; opacity:.05; background-image:url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'2\' fill=\'%23fff\'/%3E%3C/svg%3E')"></div>
+  <div class="container" style="position:relative; text-align:center">
+    <div style="font-family:'Amiri',serif; font-size:.9rem; color:var(--gold-light); letter-spacing:.15em; margin-bottom:.8rem">
+      أهلاً بكم في
+    </div>
+    <h1 style="font-family:'Amiri',serif; font-size:3rem; color:#fff; margin-bottom:.8rem; line-height:1.2">
+      مكتبة <span style="color:var(--gold)">دمشقية</span>
+    </h1>
+    <p style="color:rgba(255,255,255,.75); font-size:1.05rem; max-width:500px; margin:0 auto 2rem; line-height:1.7">
+      اكتشف عالماً من الكتب والمعرفة — تصفح، استعر، أو اقتنِ ما يثري عقلك
+    </p>
+
+    <!-- Search -->
+    <div style="max-width:500px; margin:0 auto">
+      <form action="{% url 'public_book_list' %}" method="get">
+        <div class="search-bar">
+          <input type="text" name="q" placeholder="ابحث عن كتاب أو مؤلف..."/>
+          <button type="submit"><i class="bi bi-search"></i> بحث</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:flex; gap:2rem; justify-content:center; margin-top:2.5rem; flex-wrap:wrap">
+      <div style="text-align:center; color:rgba(255,255,255,.85)">
+        <div style="font-size:1.8rem; font-weight:700; color:var(--gold)">{{ total_books }}+</div>
+        <div style="font-size:.82rem">كتاب</div>
+      </div>
+      <div style="width:1px; background:rgba(255,255,255,.15)"></div>
+      <div style="text-align:center; color:rgba(255,255,255,.85)">
+        <div style="font-size:1.8rem; font-weight:700; color:var(--gold)">{{ total_authors }}+</div>
+        <div style="font-size:.82rem">مؤلف</div>
+      </div>
+      <div style="width:1px; background:rgba(255,255,255,.15)"></div>
+      <div style="text-align:center; color:rgba(255,255,255,.85)">
+        <div style="font-size:1.8rem; font-weight:700; color:var(--gold)">{{ categories.count }}+</div>
+        <div style="font-size:.82rem">تصنيف</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Categories -->
+{% if categories %}
+<div class="section" style="padding-bottom:1rem">
+  <div class="container">
+    <div style="display:flex; gap:.6rem; flex-wrap:wrap">
+      <a href="{% url 'public_book_list' %}" style="padding:.4rem 1rem; border-radius:20px; background:var(--teal); color:#fff; text-decoration:none; font-size:.85rem; display:flex; align-items:center; gap:.3rem">
+        <i class="bi bi-grid"></i> الكل
+      </a>
+      {% for cat in categories %}
+      <a href="{% url 'public_book_list' %}?category={{ cat.pk }}"
+         style="padding:.4rem 1rem; border-radius:20px; background:var(--surface); border:1px solid var(--border); color:var(--text-muted); text-decoration:none; font-size:.85rem; transition:all .2s"
+         onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'"
+         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+        {{ cat.name }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Featured Books -->
+<div class="section">
+  <div class="container">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.5rem">
+      <div>
+        <h2 class="section-title">الكتب المتاحة</h2>
+        <p style="color:var(--text-muted); font-size:.88rem">جاهزة للاستعارة الآن</p>
+      </div>
+      <a href="{% url 'public_book_list' %}" class="btn-outline" style="font-size:.83rem">
+        عرض الكل <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+    <div class="books-grid">
+      {% for book in featured_books %}
+      <a href="{% url 'public_book_detail' book.pk %}" class="book-card">
+        <div class="book-cover">
+          {% if book.cover_image %}
+          <img src="{{ book.cover_image.url }}" alt="{{ book.title }}"/>
+          {% else %}
+          <div class="book-cover-placeholder">
+            <i class="bi bi-book" style="font-size:2.5rem; color:rgba(255,255,255,.3)"></i>
+          </div>
+          {% endif %}
+          <div style="position:absolute; top:.5rem; right:.5rem; display:flex; flex-direction:column; gap:.3rem">
+            <span class="badge badge-available">متاح</span>
+            <!-- {% if book.price %}
+            <span class="badge badge-sale">للبيع</span>
+            {% endif %} -->
+          </div>
+        </div>
+        <div class="book-info">
+          <div class="book-title">{{ book.title|truncatechars:45 }}</div>
+          <div class="book-author">{{ book.author.full_name }}</div>
+          <div class="book-footer">
+            <span style="background:var(--bg); color:var(--text-muted); font-size:.72rem; padding:.2rem .5rem; border-radius:6px">
+              {{ book.category.name }}
+            </span>
+            {% if book.avg_rating > 0 %}
+            <span class="stars"><i class="bi bi-star-fill"></i> {{ book.avg_rating }}</span>
+            {% endif %}
+          </div>
+          {% if book.price %}
+          <div style="margin-top:.6rem; color:var(--gold); font-weight:700; font-size:.9rem">
+            {{ book.price }} MRU
+          </div>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Latest Books -->
+{% if latest_books %}
+<div class="section" style="background:var(--surface); padding:3rem 0">
+  <div class="container">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.5rem">
+      <div>
+        <h2 class="section-title">أحدث الإضافات</h2>
+        <p style="color:var(--text-muted); font-size:.88rem">آخر ما وصل للمكتبة</p>
+      </div>
+    </div>
+    <div class="books-grid">
+      {% for book in latest_books %}
+      <a href="{% url 'public_book_detail' book.pk %}" class="book-card">
+        <div class="book-cover" style="height:160px">
+          {% if book.cover_image %}
+          <img src="{{ book.cover_image.url }}" alt="{{ book.title }}"/>
+          {% else %}
+          <div class="book-cover-placeholder">
+            <i class="bi bi-book-fill" style="font-size:2rem; color:rgba(255,255,255,.25)"></i>
+          </div>
+          {% endif %}
+          <div style="position:absolute; top:.5rem; right:.5rem">
+            <span style="background:var(--gold); color:var(--teal-dark); font-size:.7rem; padding:.2rem .5rem; border-radius:6px; font-weight:700">جديد</span>
+          </div>
+        </div>
+        <div class="book-info">
+          <div class="book-title">{{ book.title|truncatechars:40 }}</div>
+          <div class="book-author">{{ book.author.full_name }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- CTA Section -->
+<div style="background:var(--gold-pale); padding:3rem 0; text-align:center; border-top:1px solid var(--border)">
+  <div class="container">
+    <h2 style="font-family:'Amiri',serif; font-size:1.8rem; margin-bottom:.6rem">هل تريد الانتساب؟</h2>
+    <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:.92rem">
+      تواصل معنا عبر واتساب للحصول على بطاقة انتساب والاستفادة من خدمات الاستعارة
+    </p>
+    {% if whatsapp %}
+    <a href="https://wa.me/{{ whatsapp }}?text=أريد الانتساب في مكتبة دمشقية"
+       class="btn-whatsapp" target="_blank">
+      <i class="bi bi-whatsapp"></i> تواصل معنا على واتساب
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

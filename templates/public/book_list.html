@@ -1,0 +1,106 @@
+{% extends "public/base_public.html" %}
+{% block title %}الكتب — مكتبة دمشقية{% endblock %}
+
+{% block content %}
+<div class="container section">
+
+  <!-- Header -->
+  <div style="margin-bottom:1.8rem">
+    <h1 style="font-family:'Amiri',serif; font-size:1.8rem; margin-bottom:.3rem">فهرس الكتب</h1>
+    <p style="color:var(--text-muted); font-size:.88rem">{{ total }} كتاب</p>
+  </div>
+
+  <!-- Filters -->
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem; margin-bottom:1.8rem">
+    <form method="get" style="display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end">
+      <div style="flex:1; min-width:220px">
+        <div class="search-bar">
+          <input type="text" name="q" value="{{ query }}" placeholder="بحث بالعنوان أو المؤلف..."/>
+          <button type="submit"><i class="bi bi-search"></i></button>
+        </div>
+      </div>
+      <div style="min-width:150px">
+        <select name="category" class="form-select" onchange="this.form.submit()">
+          <option value="">كل التصنيفات</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>
+            {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="min-width:130px">
+        <select name="language" class="form-select" onchange="this.form.submit()">
+          <option value="">كل اللغات</option>
+          <option value="ar" {% if selected_language == 'ar' %}selected{% endif %}>عربي</option>
+          <option value="fr" {% if selected_language == 'fr' %}selected{% endif %}>فرنسي</option>
+          <option value="en" {% if selected_language == 'en' %}selected{% endif %}>إنجليزي</option>
+        </select>
+      </div>
+      <div style="min-width:140px">
+        <select name="availability" class="form-select" onchange="this.form.submit()">
+          <option value="">الكل</option>
+          <option value="available" {% if selected_availability == 'available' %}selected{% endif %}>متاح للاستعارة</option>
+          <option value="for_sale"  {% if selected_availability == 'for_sale' %}selected{% endif %}>للبيع</option>
+        </select>
+      </div>
+      {% if query or selected_category or selected_language or selected_availability %}
+      <a href="{% url 'public_book_list' %}" class="btn-outline" style="white-space:nowrap">
+        <i class="bi bi-x"></i> مسح
+      </a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Books Grid -->
+  <div class="books-grid">
+    {% for book in books %}
+    <a href="{% url 'public_book_detail' book.pk %}" class="book-card">
+      <div class="book-cover">
+        {% if book.cover_image %}
+        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}"/>
+        {% else %}
+        <div class="book-cover-placeholder">
+          <i class="bi bi-book" style="font-size:2.5rem; color:rgba(255,255,255,.3)"></i>
+        </div>
+        {% endif %}
+        <div style="position:absolute; top:.5rem; right:.5rem; display:flex; flex-direction:column; gap:.3rem">
+          {% if book.available_copies > 0 %}
+          <span class="badge badge-available">متاح</span>
+          {% else %}
+          <span class="badge badge-unavailable">غير متاح</span>
+          {% endif %}
+          <!-- {% if book.price %}
+          <span class="badge badge-sale">للبيع</span>
+          {% endif %} -->
+        </div>
+      </div>
+      <div class="book-info">
+        <div class="book-title">{{ book.title|truncatechars:45 }}</div>
+        <div class="book-author">{{ book.author.full_name }}</div>
+        <div class="book-footer">
+          <span style="background:var(--bg); color:var(--text-muted); font-size:.72rem; padding:.2rem .5rem; border-radius:6px">
+            {{ book.category.name }}
+          </span>
+          {% if book.avg_rating > 0 %}
+          <span class="stars"><i class="bi bi-star-fill"></i> {{ book.avg_rating }}</span>
+          {% endif %}
+        </div>
+        {% if book.price %}
+        <div style="margin-top:.6rem; color:var(--gold); font-weight:700; font-size:.9rem">{{ book.price }} MRU</div>
+        {% endif %}
+      </div>
+    </a>
+    {% empty %}
+    <div style="grid-column:1/-1; text-align:center; padding:5rem; color:var(--text-muted)">
+      <i class="bi bi-search" style="font-size:3rem; display:block; margin-bottom:1rem; opacity:.3"></i>
+      لا توجد كتب تطابق بحثك
+      <br/>
+      <a href="{% url 'public_book_list' %}" class="btn-primary" style="margin-top:1rem; display:inline-flex">
+        عرض كل الكتب
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

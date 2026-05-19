@@ -1,0 +1,127 @@
+{% extends "base/base.html" %}
+{% block title %}الكتب — مكتبة دمشقية{% endblock %}
+{% block page_title %}فهرس الكتب{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">الكتب</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ books.count }} كتاب في الفهرس</p>
+  </div>
+  <a href="{% url 'book_create' %}" class="btn-primary-custom">
+    <i class="bi bi-plus-lg"></i> إضافة كتاب
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:1.2rem">
+  <div style="padding:1rem 1.2rem">
+    <form method="get" style="display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end">
+      <div class="search-wrap" style="flex:1; min-width:200px">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="بحث بالعنوان، المؤلف، ISBN..."/>
+      </div>
+      <div style="min-width:160px">
+        <select name="category" class="form-select" onchange="this.form.submit()">
+          <option value="">كل التصنيفات</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>
+            {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="min-width:130px">
+        <select name="language" class="form-select" onchange="this.form.submit()">
+          <option value="">كل اللغات</option>
+          <option value="ar" {% if selected_language == 'ar' %}selected{% endif %}>عربي</option>
+          <option value="fr" {% if selected_language == 'fr' %}selected{% endif %}>فرنسي</option>
+          <option value="en" {% if selected_language == 'en' %}selected{% endif %}>إنجليزي</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-primary-custom"><i class="bi bi-search"></i> بحث</button>
+      {% if query or selected_category or selected_language %}
+      <a href="{% url 'book_list' %}" class="btn-outline-custom"><i class="bi bi-x"></i> مسح</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Books Grid -->
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1rem">
+  {% for book in books %}
+  <div class="card" style="transition:transform .2s, box-shadow .2s; cursor:pointer"
+       onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.1)'"
+       onmouseout="this.style.transform='';this.style.boxShadow=''">
+    <!-- Book Cover -->
+    <div style="height:160px; background:linear-gradient(135deg, var(--teal-dark), var(--teal)); position:relative; overflow:hidden">
+      {% if book.cover_image %}
+      <img src="{{ book.cover_image.url }}" alt="{{ book.title }}"
+           style="width:100%; height:100%; object-fit:cover"/>
+      {% else %}
+      <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:.4rem">
+        <i class="bi bi-book" style="font-size:2.5rem; color:rgba(255,255,255,.3)"></i>
+        <span style="color:rgba(255,255,255,.4); font-size:.7rem">بدون غلاف</span>
+      </div>
+      {% endif %}
+      <!-- Available badge -->
+      <div style="position:absolute; top:.5rem; right:.5rem">
+        {% if book.available_copies > 0 %}
+        <span style="background:rgba(39,174,96,.9); color:#fff; font-size:.7rem; padding:.2rem .5rem; border-radius:20px">
+          {{ book.available_copies }} متاح
+        </span>
+        {% else %}
+        <span style="background:rgba(192,57,43,.9); color:#fff; font-size:.7rem; padding:.2rem .5rem; border-radius:20px">
+          غير متاح
+        </span>
+        {% endif %}
+      </div>
+      {% if book.price %}
+      <div style="position:absolute; bottom:.5rem; left:.5rem; background:var(--gold); color:var(--teal-dark); font-size:.72rem; padding:.2rem .5rem; border-radius:6px; font-weight:700">
+        {{ book.price }} MRU
+      </div>
+      {% endif %}
+    </div>
+
+    <div style="padding:.9rem">
+      <div style="font-weight:500; font-size:.9rem; margin-bottom:.25rem; line-height:1.3">
+        {{ book.title|truncatechars:40 }}
+      </div>
+      <div style="color:var(--text-muted); font-size:.78rem; margin-bottom:.5rem">
+        {{ book.author.full_name }}
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between">
+        <span style="background:var(--bg); color:var(--text-muted); font-size:.72rem; padding:.15rem .5rem; border-radius:6px">
+          {{ book.category.name }}
+        </span>
+        {% if book.avg_rating > 0 %}
+        <span style="color:var(--gold); font-size:.78rem">
+          <i class="bi bi-star-fill"></i> {{ book.avg_rating }}
+        </span>
+        {% endif %}
+      </div>
+      <div style="display:flex; gap:.4rem; margin-top:.8rem">
+        <a href="{% url 'book_detail' book.pk %}" class="btn-primary-custom"
+           style="flex:1; justify-content:center; font-size:.8rem; padding:.4rem">
+          <i class="bi bi-eye"></i> عرض
+        </a>
+        <a href="{% url 'book_update' book.pk %}" class="btn-outline-custom"
+           style="font-size:.8rem; padding:.4rem .6rem">
+          <i class="bi bi-pencil"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1; text-align:center; padding:4rem; color:var(--text-muted)">
+    <i class="bi bi-book" style="font-size:3rem; display:block; margin-bottom:.8rem; opacity:.3"></i>
+    لا توجد كتب في الفهرس
+    <br/>
+    <a href="{% url 'book_create' %}" class="btn-primary-custom" style="margin-top:1rem; display:inline-flex">
+      <i class="bi bi-plus-lg"></i> إضافة أول كتاب
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

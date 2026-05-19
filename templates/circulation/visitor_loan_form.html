@@ -1,0 +1,46 @@
+{% extends "base/base.html" %}
+{% block title %}استعارة زائر — مكتبة دمشقية{% endblock %}
+{% block page_title %}استعارة زائر{% endblock %}
+
+{% block content %}
+<div style="max-width:580px">
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="bi bi-person-walking"></i>
+      <span>تسجيل استعارة زائر</span>
+    </div>
+    <div style="padding:1.5rem">
+
+      <div style="background:rgba(45,107,107,.06); border:1px solid rgba(45,107,107,.15); border-radius:10px; padding:.9rem; margin-bottom:1.3rem; font-size:.83rem; color:var(--text-muted)">
+        <i class="bi bi-info-circle" style="color:var(--teal)"></i>
+        استعارة الزوار غير المنتسبين — المدة 10 أيام والرسوم 100 أوقية
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:1.1rem">
+          {% for field in form %}
+          <div>
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">
+              {{ field.errors|join:", " }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div style="display:flex; gap:.8rem; margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--border)">
+          <button type="submit" class="btn-gold">
+            <i class="bi bi-check-lg"></i> تسجيل الاستعارة
+          </button>
+          <a href="{% url 'loan_list' %}" class="btn-outline-custom">
+            <i class="bi bi-x"></i> إلغاء
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base/base.html" %}
+{% block title %}سجل العمليات — مكتبة دمشقية{% endblock %}
+{% block page_title %}سجل العمليات{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">سجل العمليات</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ logs.count }} عملية مسجلة</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:1.2rem">
+  <div style="padding:1rem 1.2rem">
+    <form method="get" style="display:flex; gap:.8rem; flex-wrap:wrap">
+      <div class="search-wrap" style="flex:1; min-width:200px">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="بحث..."/>
+      </div>
+      <div style="min-width:150px">
+        <select name="action" class="form-select" onchange="this.form.submit()">
+          <option value="">كل العمليات</option>
+          {% for value, label in action_choices %}
+          <option value="{{ value }}" {% if action == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn-primary-custom"><i class="bi bi-search"></i> بحث</button>
+      {% if query or action %}
+      <a href="{% url 'audit_log_list' %}" class="btn-outline-custom"><i class="bi bi-x"></i> مسح</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>الإداري</th>
+          <th>العملية</th>
+          <th>العنصر</th>
+          <th>الوصف</th>
+          <th>IP</th>
+          <th>الوقت</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="font-weight:500; font-size:.85rem">{{ log.admin.user.username }}</td>
+          <td>
+            <span style="padding:.25rem .65rem; border-radius:20px; font-size:.75rem; font-weight:500;
+              {% if log.action == 'create' %}background:rgba(39,174,96,.1); color:var(--success)
+              {% elif log.action == 'delete' %}background:rgba(192,57,43,.1); color:var(--danger)
+              {% elif log.action == 'update' %}background:rgba(45,107,107,.1); color:var(--teal)
+              {% elif log.action == 'login' %}background:rgba(201,168,76,.1); color:var(--gold)
+              {% else %}background:var(--bg); color:var(--text-muted){% endif %}">
+              {{ log.get_action_display }}
+            </span>
+          </td>
+          <td style="font-size:.82rem; color:var(--text-muted)">
+            {{ log.target_model }}
+            {% if log.target_id %}#{{ log.target_id }}{% endif %}
+          </td>
+          <td style="font-size:.82rem; max-width:200px">
+            {{ log.description|default:"—"|truncatechars:50 }}
+          </td>
+          <td style="font-size:.78rem; color:var(--text-muted); font-family:monospace">
+            {{ log.ip_address|default:"—" }}
+          </td>
+          <td style="font-size:.78rem; color:var(--text-muted)">
+            {{ log.timestamp|date:"Y-m-d" }}<br>
+            <span style="font-size:.72rem">{{ log.timestamp|date:"H:i" }}</span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted)">
+            <i class="bi bi-journal" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.4"></i>
+            لا توجد سجلات
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

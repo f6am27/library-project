@@ -1,0 +1,52 @@
+{% extends "base/base.html" %}
+{% block title %}التصنيفات — مكتبة دمشقية{% endblock %}
+{% block page_title %}إدارة التصنيفات{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">التصنيفات</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ categories.count }} تصنيف</p>
+  </div>
+  <a href="{% url 'category_create' %}" class="btn-primary-custom">
+    <i class="bi bi-plus-lg"></i> إضافة تصنيف
+  </a>
+</div>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem">
+  {% for category in categories %}
+  <div class="card" style="padding:1.2rem; transition:transform .2s"
+       onmouseover="this.style.transform='translateY(-2px)'"
+       onmouseout="this.style.transform=''">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:.8rem">
+      <div style="width:42px; height:42px; background:rgba(201,168,76,.12); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+        <i class="bi bi-tag-fill" style="color:var(--gold); font-size:1.1rem"></i>
+      </div>
+      <a href="{% url 'category_create' %}" class="btn-icon" title="تعديل" style="width:28px; height:28px; font-size:.8rem">
+        <i class="bi bi-pencil"></i>
+      </a>
+    </div>
+    <div style="font-weight:500; font-size:.95rem; margin-bottom:.3rem">{{ category.name }}</div>
+    {% if category.description %}
+    <div style="color:var(--text-muted); font-size:.78rem; margin-bottom:.7rem">
+      {{ category.description|truncatechars:60 }}
+    </div>
+    {% endif %}
+    <div style="display:flex; align-items:center; gap:.4rem; margin-top:.5rem">
+      <span style="background:rgba(45,107,107,.1); color:var(--teal); padding:.2rem .6rem; border-radius:20px; font-size:.75rem; font-weight:500">
+        {{ category.books.count }} كتاب
+      </span>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1; text-align:center; padding:4rem; color:var(--text-muted)">
+    <i class="bi bi-tag" style="font-size:3rem; display:block; margin-bottom:.8rem; opacity:.3"></i>
+    لا توجد تصنيفات
+    <br/>
+    <a href="{% url 'category_create' %}" class="btn-primary-custom" style="margin-top:1rem; display:inline-flex">
+      <i class="bi bi-plus-lg"></i> إضافة أول تصنيف
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

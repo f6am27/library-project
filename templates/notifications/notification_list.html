@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+{% block title %}الإشعارات — مكتبة دمشقية{% endblock %}
+{% block page_title %}الإشعارات{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">الإشعارات</h2>
+  </div>
+  <a href="{% url 'notification_mark_all_read' %}" class="btn-outline-custom" style="font-size:.82rem">
+    <i class="bi bi-check-all"></i> تحديد الكل كمقروء
+  </a>
+</div>
+
+<div style="display:flex; flex-direction:column; gap:.6rem; max-width:800px">
+  {% for notif in notifications %}
+  <div class="card" style="border-right:3px solid {% if not notif.is_read %}var(--gold){% else %}var(--border){% endif %}; {% if not notif.is_read %}background:rgba(201,168,76,.03){% endif %}">
+    <div style="padding:1rem 1.2rem; display:flex; align-items:flex-start; gap:1rem">
+      <!-- Icon -->
+      <div style="width:40px; height:40px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+        {% if 'overdue' in notif.notification_type or 'fine' in notif.notification_type %}background:rgba(192,57,43,.1); color:var(--danger)
+        {% elif 'expir' in notif.notification_type %}background:rgba(230,126,34,.1); color:var(--warning)
+        {% elif 'ready' in notif.notification_type or 'return' in notif.notification_type %}background:rgba(39,174,96,.1); color:var(--success)
+        {% else %}background:rgba(45,107,107,.1); color:var(--teal){% endif %}">
+        <i class="bi bi-
+          {% if 'overdue' in notif.notification_type %}clock-history
+          {% elif 'fine' in notif.notification_type %}exclamation-circle
+          {% elif 'expir' in notif.notification_type %}calendar-x
+          {% elif 'ready' in notif.notification_type %}bag-check
+          {% elif 'member' in notif.notification_type %}person-plus
+          {% else %}bell{% endif %}"></i>
+      </div>
+      <!-- Content -->
+      <div style="flex:1">
+        <div style="font-weight:{% if not notif.is_read %}600{% else %}400{% endif %}; font-size:.9rem; margin-bottom:.2rem">
+          {{ notif.title }}
+        </div>
+        <div style="color:var(--text-muted); font-size:.82rem; margin-bottom:.4rem">
+          {{ notif.message }}
+        </div>
+        <div style="color:var(--text-muted); font-size:.75rem">
+          <i class="bi bi-clock"></i>
+          {{ notif.created_at|timesince }} مضت
+        </div>
+      </div>
+      <!-- Unread indicator -->
+      {% if not notif.is_read %}
+      <div style="width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; margin-top:.3rem"></div>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div style="text-align:center; padding:4rem; color:var(--text-muted)">
+    <i class="bi bi-bell-slash" style="font-size:3rem; display:block; margin-bottom:.8rem; opacity:.3"></i>
+    لا توجد إشعارات
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

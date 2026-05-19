@@ -1,0 +1,152 @@
+{% extends "base/base.html" %}
+{% block title %}طلبات المنتسبين — مكتبة دمشقية{% endblock %}
+{% block page_title %}طلبات المنتسبين{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">طلبات المنتسبين</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ requests.count }} طلب</p>
+  </div>
+  {% if pending_count > 0 %}
+  <div style="background:rgba(201,168,76,.12); border:1px solid rgba(201,168,76,.25); border-radius:10px; padding:.6rem 1rem; font-size:.85rem; color:var(--gold); display:flex; align-items:center; gap:.5rem">
+    <i class="bi bi-bell-fill"></i>
+    {{ pending_count }} طلب ينتظر مراجعتك
+  </div>
+  {% endif %}
+</div>
+
+<!-- Tabs -->
+<div style="display:flex; gap:.4rem; margin-bottom:1.2rem; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.4rem; width:fit-content">
+  {% for tab_status, tab_label in status_tabs %}
+  <a href="?status={{ tab_status }}"
+     style="padding:.45rem 1rem; border-radius:8px; font-size:.85rem; text-decoration:none; transition:all .2s;
+     {% if status == tab_status %}background:var(--teal); color:#fff; font-weight:500{% else %}color:var(--text-muted){% endif %}">
+    {{ tab_label }}
+  </a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>المنتسب</th>
+          <th>الكتاب</th>
+          <th>نوع الطلب</th>
+          <th>تاريخ الطلب</th>
+          <th>ملاحظات</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in requests %}
+        <tr>
+          <td>
+            <div style="font-weight:500; font-size:.88rem">{{ req.member.full_name }}</div>
+            <div style="font-size:.75rem; color:var(--text-muted)">{{ req.member.membership_number }}</div>
+          </td>
+          <td>
+            <div style="font-size:.88rem; font-weight:500">{{ req.book.title|truncatechars:35 }}</div>
+            <div style="font-size:.75rem; color:var(--text-muted)">{{ req.book.author.full_name }}</div>
+            <!-- عدد النسخ المتاحة -->
+            <div style="margin-top:.3rem; display:flex; gap:.3rem; flex-wrap:wrap">
+              {% with loan_count=req.book.available_loan_copies %}
+              {% if loan_count > 0 %}
+              <span style="background:rgba(39,174,96,.1); color:var(--success); font-size:.7rem; padding:.1rem .4rem; border-radius:4px">
+                {{ loan_count }} استعارة متاح
+              </span>
+              {% else %}
+              <span style="background:rgba(192,57,43,.08); color:var(--danger); font-size:.7rem; padding:.1rem .4rem; border-radius:4px">
+                لا نسخ للاستعارة
+              </span>
+              {% endif %}
+              {% endwith %}
+              {% with sale_count=req.book.available_sale_copies %}
+              {% if sale_count > 0 %}
+              <span style="background:rgba(201,168,76,.12); color:var(--gold); font-size:.7rem; padding:.1rem .4rem; border-radius:4px">
+                {{ sale_count }} بيع متاح
+              </span>
+              {% endif %}
+              {% endwith %}
+            </div>
+          </td>
+          <td>
+            <span style="padding:.3rem .7rem; border-radius:20px; font-size:.78rem; font-weight:500;
+              {% if req.request_type == 'loan' %}background:rgba(45,107,107,.1); color:var(--teal)
+              {% else %}background:rgba(201,168,76,.12); color:var(--gold){% endif %}">
+              {% if req.request_type == 'loan' %}
+              <i class="bi bi-arrow-left-right"></i> استعارة
+              {% else %}
+              <i class="bi bi-cart"></i> شراء
+              {% endif %}
+            </span>
+          </td>
+          <td style="font-size:.82rem; color:var(--text-muted)">
+            {{ req.created_at|date:"Y-m-d" }}<br>
+            <span style="font-size:.75rem">{{ req.created_at|date:"H:i" }}</span>
+          </td>
+          <td style="font-size:.82rem; color:var(--text-muted); max-width:150px">
+            {{ req.notes|default:"—"|truncatechars:40 }}
+          </td>
+          <td>
+            <span style="padding:.3rem .7rem; border-radius:20px; font-size:.75rem; font-weight:500;
+              {% if req.status == 'pending' %}background:rgba(201,168,76,.12); color:var(--gold)
+              {% elif req.status == 'completed' %}background:rgba(39,174,96,.1); color:var(--success)
+              {% elif req.status == 'rejected' %}background:rgba(192,57,43,.1); color:var(--danger)
+              {% else %}background:var(--bg); color:var(--text-muted){% endif %}">
+              {{ req.get_status_display }}
+            </span>
+          </td>
+          <td>
+            {% if req.status == 'pending' %}
+            <div style="display:flex; flex-direction:column; gap:.4rem">
+              {% if req.request_type == 'loan' %}
+              <form method="post" action="{% url 'request_approve_loan' req.pk %}"
+                    onsubmit="return confirm('تأكيد الاستعارة؟ سيتم إنشاء سجل استعارة تلقائياً.')">
+                {% csrf_token %}
+                <button type="submit" class="btn-primary-custom"
+                        style="font-size:.78rem; padding:.35rem .7rem; background:var(--success); width:100%; justify-content:center">
+                  <i class="bi bi-check-circle"></i> تأكيد الاستعارة
+                </button>
+              </form>
+              {% else %}
+              <form method="post" action="{% url 'request_approve_sale' req.pk %}"
+                    onsubmit="return confirm('تأكيد البيع؟ سيتم تحديث المخزون تلقائياً.')">
+                {% csrf_token %}
+                <button type="submit" class="btn-gold"
+                        style="font-size:.78rem; padding:.35rem .7rem; width:100%; justify-content:center">
+                  <i class="bi bi-check-circle"></i> تأكيد البيع
+                </button>
+              </form>
+              {% endif %}
+              <form method="post" action="{% url 'request_reject' req.pk %}"
+                    onsubmit="return confirm('هل تريد رفض هذا الطلب؟')">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline-custom"
+                        style="font-size:.78rem; padding:.35rem .7rem; border-color:rgba(192,57,43,.3); color:var(--danger); width:100%; justify-content:center">
+                  <i class="bi bi-x-circle"></i> رفض
+                </button>
+              </form>
+            </div>
+            {% else %}
+            <span style="color:var(--text-muted); font-size:.8rem">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:3rem; color:var(--text-muted)">
+            <i class="bi bi-inbox" style="font-size:2.5rem; display:block; margin-bottom:.6rem; opacity:.3"></i>
+            لا توجد طلبات
+            {% if status == 'pending' %}معلقة{% elif status == 'completed' %}مكتملة{% else %}مرفوضة{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

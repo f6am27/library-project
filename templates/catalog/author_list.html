@@ -1,0 +1,89 @@
+{% extends "base/base.html" %}
+{% block title %}المؤلفون — مكتبة دمشقية{% endblock %}
+{% block page_title %}إدارة المؤلفين{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">المؤلفون</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">{{ authors.count }} مؤلف في القاعدة</p>
+  </div>
+  <a href="{% url 'author_create' %}" class="btn-primary-custom">
+    <i class="bi bi-plus-lg"></i> إضافة مؤلف
+  </a>
+</div>
+
+<!-- Search -->
+<div class="card" style="margin-bottom:1.2rem">
+  <div style="padding:1rem 1.2rem">
+    <form method="get" style="display:flex; gap:.8rem; flex-wrap:wrap">
+      <div class="search-wrap" style="flex:1; min-width:200px">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="بحث باسم المؤلف..."/>
+      </div>
+      <button type="submit" class="btn-primary-custom"><i class="bi bi-search"></i> بحث</button>
+      {% if query %}
+      <a href="{% url 'author_list' %}" class="btn-outline-custom"><i class="bi bi-x"></i> مسح</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>المؤلف</th>
+          <th>الجنسية</th>
+          <th>عدد الكتب</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for author in authors %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:.7rem">
+              <div style="width:36px; height:36px; background:linear-gradient(135deg,var(--teal-dark),var(--teal)); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--gold); font-size:.85rem; font-weight:700; flex-shrink:0">
+                {{ author.full_name|first }}
+              </div>
+              <div>
+                <div style="font-weight:500; font-size:.9rem">{{ author.full_name }}</div>
+                {% if author.bio %}
+                <div style="font-size:.75rem; color:var(--text-muted)">{{ author.bio|truncatechars:50 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--text-muted); font-size:.85rem">
+            {{ author.nationality|default:"—" }}
+          </td>
+          <td>
+            <span style="background:rgba(45,107,107,.1); color:var(--teal); padding:.2rem .6rem; border-radius:20px; font-size:.8rem; font-weight:500">
+              {{ author.books.count }} كتاب
+            </span>
+          </td>
+          <td>
+            <div style="display:flex; gap:.4rem">
+              <a href="{% url 'author_update' author.pk %}" class="btn-icon" title="تعديل">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align:center; padding:3rem; color:var(--text-muted)">
+            <i class="bi bi-pen" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.4"></i>
+            لا يوجد مؤلفون
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

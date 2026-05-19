@@ -1,0 +1,31 @@
+{% extends "base/base.html" %}
+{% block title %}تأكيد الحذف — مكتبة دمشقية{% endblock %}
+{% block page_title %}تأكيد الحذف{% endblock %}
+
+{% block content %}
+<div style="max-width:450px; margin:0 auto">
+  <div class="card" style="text-align:center; padding:2.5rem">
+    <div style="width:64px; height:64px; background:rgba(192,57,43,.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem; font-size:1.6rem; color:var(--danger)">
+      <i class="bi bi-trash"></i>
+    </div>
+    <h2 style="font-size:1.1rem; font-weight:600; margin-bottom:.6rem">تأكيد الحذف</h2>
+    <p style="color:var(--text-muted); font-size:.88rem; margin-bottom:1.8rem">
+      هل أنت متأكد من حذف
+      {% if admin %}<strong>{{ admin.user.username }}</strong>{% endif %}
+      {% if book %}<strong>{{ book.title }}</strong>{% endif %}
+      نهائياً؟ لا يمكن التراجع عن هذا الإجراء.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:flex; gap:.8rem; justify-content:center">
+        <button type="submit" style="background:var(--danger); color:#fff; border:none; padding:.6rem 1.4rem; border-radius:9px; font-family:'Tajawal',sans-serif; font-size:.9rem; cursor:pointer">
+          <i class="bi bi-trash"></i> نعم، احذف
+        </button>
+        <a href="javascript:history.back()" class="btn-outline-custom">
+          <i class="bi bi-x"></i> إلغاء
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

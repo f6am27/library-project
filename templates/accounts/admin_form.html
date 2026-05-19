@@ -1,0 +1,37 @@
+{% extends "base/base.html" %}
+{% block title %}{{ title }} — مكتبة دمشقية{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:550px">
+  <div class="card">
+    <div class="card-header-custom">
+      <i class="bi bi-pen"></i>
+      <span>{{ title }}</span>
+    </div>
+    <div style="padding:1.5rem">
+      <form method="post">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:1rem">
+          {% for field in form %}
+          <div>
+            <label class="form-label">
+              {{ field.label }}
+              {% if field.field.required %}<span style="color:var(--danger)">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+            <div style="color:var(--danger); font-size:.78rem; margin-top:.3rem">{{ field.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div style="display:flex; gap:.8rem; margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--border)">
+          <button type="submit" class="btn-gold"><i class="bi bi-check-lg"></i> حفظ</button>
+          <a href="javascript:history.back()" class="btn-outline-custom"><i class="bi bi-x"></i> إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

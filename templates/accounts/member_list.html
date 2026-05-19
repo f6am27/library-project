@@ -1,0 +1,131 @@
+{% extends "base/base.html" %}
+{% block title %}المنتسبون — مكتبة دمشقية{% endblock %}
+{% block page_title %}إدارة المنتسبين{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.3rem; flex-wrap:wrap; gap:.8rem">
+  <div>
+    <h2 style="font-size:1.15rem; font-weight:600">المنتسبون</h2>
+    <p style="color:var(--text-muted); font-size:.82rem">إجمالي {{ members.count }} منتسب</p>
+  </div>
+  <a href="{% url 'member_create' %}" class="btn-primary-custom">
+    <i class="bi bi-person-plus"></i> إضافة منتسب
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:1.2rem">
+  <div style="padding:1rem 1.2rem">
+    <form method="get" style="display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end">
+      <div class="search-wrap" style="flex:1; min-width:200px">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ query }}" class="form-control"
+               placeholder="بحث بالاسم، رقم الانتساب، الهوية..."/>
+      </div>
+      <div style="min-width:150px">
+        <select name="status" class="form-select" onchange="this.form.submit()">
+          <option value="">كل الحالات</option>
+          <option value="active"    {% if status == 'active' %}selected{% endif %}>نشط</option>
+          <option value="expired"   {% if status == 'expired' %}selected{% endif %}>منتهي</option>
+          <option value="suspended" {% if status == 'suspended' %}selected{% endif %}>موقوف</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-primary-custom">
+        <i class="bi bi-search"></i> بحث
+      </button>
+      {% if query or status %}
+      <a href="{% url 'member_list' %}" class="btn-outline-custom">
+        <i class="bi bi-x"></i> مسح
+      </a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>رقم الانتساب</th>
+          <th>الاسم الكامل</th>
+          <th>رقم الهوية</th>
+          <th>الخطة</th>
+          <th>انتهاء الاشتراك</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in members %}
+        <tr>
+          <td>
+            <span style="font-family:monospace; background:var(--bg); padding:.2rem .5rem; border-radius:6px; font-size:.83rem">
+              {{ member.membership_number }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex; align-items:center; gap:.6rem">
+              <div style="width:32px; height:32px; background:var(--teal-dark); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--gold); font-size:.8rem; font-weight:700; flex-shrink:0">
+                {{ member.full_name|first }}
+              </div>
+              <div>
+                <div style="font-weight:500">{{ member.full_name }}</div>
+                <div style="font-size:.75rem; color:var(--text-muted)">{{ member.user.email|default:"—" }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--text-muted); font-size:.85rem">{{ member.national_id }}</td>
+          <td style="font-size:.85rem">{{ member.plan.name }}</td>
+          <td style="font-size:.85rem">
+            {{ member.membership_end }}
+            {% if member.membership_end <= today %}
+            <span style="color:var(--danger); font-size:.75rem; display:block">منتهي</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge-status badge-{{ member.status }}">
+              {{ member.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex; gap:.4rem">
+              <a href="{% url 'member_detail' member.pk %}" class="btn-icon" title="عرض">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'member_update' member.pk %}" class="btn-icon" title="تعديل">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% if member.status == 'active' %}
+              <form method="post" action="{% url 'member_suspend' member.pk %}" style="display:inline"
+                    onsubmit="return confirm('هل تريد إيقاف هذا المنتسب؟')">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon" title="إيقاف"
+                        style="border-color:rgba(192,57,43,.3); color:var(--danger)">
+                  <i class="bi bi-pause-circle"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:3rem; color:var(--text-muted)">
+            <i class="bi bi-people" style="font-size:2rem; display:block; margin-bottom:.5rem; opacity:.4"></i>
+            لا يوجد منتسبون
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const today = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
