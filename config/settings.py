@@ -1,5 +1,7 @@
 from pathlib import Path
 from decouple import config
+import cloudinary
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +16,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
     'rest_framework',
     'corsheaders',
     'modeltranslation',
@@ -148,3 +152,12 @@ CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
     default='http://localhost:8000'
 ).split(',')
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
