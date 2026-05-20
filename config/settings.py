@@ -98,11 +98,17 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 TIME_ZONE = 'Africa/Nouakchott'
 USE_TZ = True
 
+# ───── Static Files ─────
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# STATICFILES_DIRS فقط إذا كان مجلد static موجوداً محلياً
+import os
+if os.path.exists(BASE_DIR / 'static'):
+    STATICFILES_DIRS = [BASE_DIR / 'static']
+
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# ───── Media Files (محلياً فقط) ─────
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -151,7 +157,7 @@ CSRF_TRUSTED_ORIGINS = config(
     default='http://localhost:8000'
 ).split(',')
 
-
+# ───── Cloudinary ─────
 CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
 CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
 CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
@@ -160,24 +166,18 @@ if CLOUDINARY_CLOUD_NAME:
     import cloudinary
     import cloudinary.uploader
     import cloudinary.api
-    
+
     cloudinary.config(
         cloud_name=CLOUDINARY_CLOUD_NAME,
         api_key=CLOUDINARY_API_KEY,
         api_secret=CLOUDINARY_API_SECRET,
     )
-    
+
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
         'API_KEY': CLOUDINARY_API_KEY,
         'API_SECRET': CLOUDINARY_API_SECRET,
     }
-    
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# اختبار مؤقت - سنحذفه لاحقاً
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-logger.info(f"DEFAULT_FILE_STORAGE = {DEFAULT_FILE_STORAGE if 'DEFAULT_FILE_STORAGE' in dir() else 'NOT SET'}")
-logger.info(f"CLOUDINARY_CLOUD_NAME = {CLOUDINARY_CLOUD_NAME}")
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    MEDIA_URL = f'https://res.cloudinary.com/{CLOUDINARY_CLOUD_NAME}/'
