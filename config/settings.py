@@ -174,3 +174,10 @@ if CLOUDINARY_CLOUD_NAME:
     }
     
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# اختبار مؤقت - سنحذفه لاحقاً
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.info(f"DEFAULT_FILE_STORAGE = {DEFAULT_FILE_STORAGE if 'DEFAULT_FILE_STORAGE' in dir() else 'NOT SET'}")
+logger.info(f"CLOUDINARY_CLOUD_NAME = {CLOUDINARY_CLOUD_NAME}")
