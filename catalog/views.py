@@ -53,7 +53,35 @@ def book_create_view(request):
     form = BookForm(request.POST or None, request.FILES or None)
     if request.method == 'POST':
         if form.is_valid():
-            book = form.save()
+            book = form.save(commit=False)
+
+            # ───── رفع الصورة مباشرة لـ Cloudinary ─────
+            if 'cover_image' in request.FILES:
+                try:
+                    import cloudinary.uploader
+                    image_file = request.FILES['cover_image']
+                    upload_result = cloudinary.uploader.upload(
+                        image_file,
+                        folder='books/covers',
+                        resource_type='image',
+                    )
+                    book.cover_image = upload_result['public_id']
+                except Exception as e:
+                    messages.warning(request, f'تعذر رفع الصورة: {e}')
+
+            book.save()
+            # حفظ النسخ (loan/sale copies) من الـ form
+            form.instance = book
+            loan_copies = form.cleaned_data.get('loan_copies') or 0
+            sale_copies = form.cleaned_data.get('sale_copies') or 0
+            for i in range(loan_copies):
+                BookCopy.objects.create(book=book, copy_type='loan')
+            for i in range(sale_copies):
+                BookCopy.objects.create(book=book, copy_type='sale')
+            book.total_copies = book.copies.count()
+            book.available_copies = book.copies.filter(is_available=True).count()
+            book.save(update_fields=['total_copies', 'available_copies'])
+
             messages.success(request, _('Book added successfully.'))
             return redirect('book_detail', pk=book.pk)
         else:
@@ -70,6 +98,22 @@ def book_update_view(request, pk):
     form = BookForm(request.POST or None,
                     request.FILES or None, instance=book)
     if request.method == 'POST' and form.is_valid():
+
+        # ───── رفع الصورة مباشرة لـ Cloudinary ─────
+        if 'cover_image' in request.FILES:
+            try:
+                import cloudinary.uploader
+                image_file = request.FILES['cover_image']
+                upload_result = cloudinary.uploader.upload(
+                    image_file,
+                    folder='books/covers',
+                    resource_type='image',
+                )
+                book.cover_image = upload_result['public_id']
+                book.save(update_fields=['cover_image'])
+            except Exception as e:
+                messages.warning(request, f'تعذر رفع الصورة: {e}')
+
         form.save()
         messages.success(request, _('Book updated successfully.'))
         return redirect('book_detail', pk=book.pk)
